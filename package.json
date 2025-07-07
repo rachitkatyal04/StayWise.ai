@@ -1,0 +1,27 @@
+{
+  "name": "staywise-ai",
+  "version": "1.0.0",
+  "description": "Smart Hotel Booking Platform",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": [
+    "hotel",
+    "booking",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "StayWise.ai Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "concurrently": "^8.2.0"
+  }
+}

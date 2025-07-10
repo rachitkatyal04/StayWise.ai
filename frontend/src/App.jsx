@@ -12,6 +12,7 @@ import PaymentPage from "./pages/PaymentPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
 import SmartStayPage from "./pages/SmartStayPage";
+import TripPlannerPage from "./pages/TripPlannerPage";
 
 // Admin components
 import AdminRoute from "./components/Admin/AdminRoute";
@@ -46,6 +47,7 @@ function App() {
             />
             <Route path="/my-bookings" element={<MyBookingsPage />} />
             <Route path="/smartstay" element={<SmartStayPage />} />
+            <Route path="/trip-planner" element={<TripPlannerPage />} />
 
             {/* Admin Routes */}
             <Route

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { tripPlanningAPI } from "../../services/api";
 
 const AIChatbot = () => {
   const { user } = useAuth();
@@ -246,21 +247,59 @@ const AIChatbot = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const messageText = inputMessage.trim();
     setInputMessage("");
     setIsTyping(true);
 
-    // Simulate AI thinking delay
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        text: generateAIResponse(inputMessage.trim()),
-        isBot: true,
-        timestamp: new Date(),
-      };
+    try {
+      let botResponseText;
 
-      setMessages((prev) => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // 1-2 second delay
+      // Try to get Gemini AI response if user is logged in
+      if (user) {
+        try {
+          const aiResponse = await tripPlanningAPI.chatWithAI(messageText);
+          if (aiResponse.success && aiResponse.response) {
+            botResponseText = aiResponse.response;
+          } else {
+            throw new Error("AI response failed");
+          }
+        } catch (aiError) {
+          console.log("Falling back to local AI response");
+          botResponseText = generateAIResponse(messageText);
+        }
+      } else {
+        // Use local AI for non-logged in users
+        botResponseText = generateAIResponse(messageText);
+      }
+
+      // Simulate thinking delay for better UX
+      setTimeout(() => {
+        const botResponse = {
+          id: Date.now() + 1,
+          text: botResponseText,
+          isBot: true,
+          timestamp: new Date(),
+          aiGenerated: user ? true : false,
+        };
+
+        setMessages((prev) => [...prev, botResponse]);
+        setIsTyping(false);
+      }, 1000 + Math.random() * 1000); // 1-2 second delay
+    } catch (error) {
+      console.error("Chat error:", error);
+
+      setTimeout(() => {
+        const errorResponse = {
+          id: Date.now() + 1,
+          text: "I apologize, but I'm having trouble responding right now. Please try again or visit our Trip Planner for AI-powered itineraries!",
+          isBot: true,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, errorResponse]);
+        setIsTyping(false);
+      }, 1000);
+    }
   };
 
   const handleKeyPress = (e) => {

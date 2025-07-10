@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const { body, validationResult, query } = require("express-validator");
 const Hotel = require("../models/Hotel");
 const {
@@ -278,7 +279,16 @@ router.get("/featured", async (req, res) => {
 // Get Hotel by ID
 router.get("/:id", async (req, res) => {
   try {
-    const hotel = await Hotel.findById(req.params.id)
+    const hotelId = req.params.id;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(hotelId)) {
+      return res.status(400).json({
+        message: "Invalid hotel ID format",
+      });
+    }
+
+    const hotel = await Hotel.findById(hotelId)
       .populate("reviews.user", "name")
       .populate("createdBy", "name email");
 
@@ -324,6 +334,13 @@ router.post(
       }
 
       const { checkIn, checkOut, guests = 1 } = req.body;
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          message: "Invalid hotel ID format",
+        });
+      }
 
       const hotel = await Hotel.findById(req.params.id);
       if (!hotel || !hotel.isActive) {
@@ -409,6 +426,13 @@ router.post(
       }
 
       const { rating, comment } = req.body;
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          message: "Invalid hotel ID format",
+        });
+      }
 
       const hotel = await Hotel.findById(req.params.id);
       if (!hotel || !hotel.isActive) {

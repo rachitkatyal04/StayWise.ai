@@ -255,6 +255,60 @@ export const recommendationsAPI = {
   },
 };
 
+// Trip Planning API
+export const tripPlanningAPI = {
+  generateTrip: async (tripData) => {
+    const response = await api.post("/trip-planning/generate", tripData);
+    return response;
+  },
+
+  getMyTrips: async (params = {}) => {
+    const response = await api.get("/trip-planning/my-trips", { params });
+    return response;
+  },
+
+  getTripById: async (tripId) => {
+    const response = await api.get(`/trip-planning/${tripId}`);
+    return response;
+  },
+
+  updateTrip: async (tripId, updates) => {
+    const response = await api.put(`/trip-planning/${tripId}`, updates);
+    return response;
+  },
+
+  deleteTrip: async (tripId) => {
+    const response = await api.delete(`/trip-planning/${tripId}`);
+    return response;
+  },
+
+  submitFeedback: async (tripId, feedback) => {
+    const response = await api.post(
+      `/trip-planning/${tripId}/feedback`,
+      feedback
+    );
+    return response;
+  },
+
+  regenerateTrip: async (tripId, modifications) => {
+    const response = await api.post(
+      `/trip-planning/${tripId}/regenerate`,
+      modifications
+    );
+    return response;
+  },
+
+  getPopularDestinations: async () => {
+    const response = await api.get("/trip-planning/destinations/popular");
+    return response;
+  },
+
+  chatWithAI: async (message) => {
+    const response = await api.post("/trip-planning/chat", { message });
+    return response;
+  },
+};
+
 // Admin API
 export const adminAPI = {
   // Hotel Management

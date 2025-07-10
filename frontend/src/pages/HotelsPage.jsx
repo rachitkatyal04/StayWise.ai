@@ -5,18 +5,35 @@ import SearchBar from "../components/Search/SearchBar";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import Navigation from "../components/Common/Navigation";
 import Footer from "../components/Common/Footer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
 const HotelsPage = () => {
   const [hotels, setHotels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fromTripPlanner, setFromTripPlanner] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    loadAllHotels();
-  }, []);
+    // Check if coming from trip planner
+    const tripPlanner = searchParams.get("tripPlanner");
+    const fromItinerary = searchParams.get("fromItinerary");
+    const city = searchParams.get("city");
+
+    if (tripPlanner || fromItinerary) {
+      setFromTripPlanner(true);
+      if (city) {
+        loadHotelsForDestination(city);
+      } else {
+        loadAllHotels();
+      }
+    } else {
+      loadAllHotels();
+    }
+  }, [searchParams]);
 
   const loadAllHotels = async () => {
     try {
@@ -29,6 +46,26 @@ const HotelsPage = () => {
     } catch (err) {
       console.error("Error loading hotels:", err);
       setError("Failed to load hotels. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadHotelsForDestination = async (city) => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      console.log("🏨 Loading hotels for destination:", city);
+      // Search for hotels in the specific city
+      const response = await hotelsAPI.search({
+        location: city,
+        limit: 50,
+      });
+      setHotels(response.hotels || []);
+    } catch (err) {
+      console.error("Error loading hotels for destination:", err);
+      setError(`Failed to load hotels for ${city}. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -52,12 +89,38 @@ const HotelsPage = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Discover Amazing Hotels
-          </h1>
-          <p className="text-xl mb-8">
-            Find the perfect accommodation for your next adventure
-          </p>
+          {fromTripPlanner ? (
+            <>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                🏨 Book Hotels for Your Trip
+              </h1>
+              <p className="text-xl mb-4">
+                Find and book hotels for your AI-generated itinerary
+              </p>
+              {searchParams.get("city") && (
+                <p className="text-blue-200">
+                  Hotels in {searchParams.get("city")},{" "}
+                  {searchParams.get("state")}
+                </p>
+              )}
+              {location.state?.suggestedHotels && (
+                <div className="mt-4">
+                  <p className="text-blue-200 text-sm">
+                    AI suggested: {location.state.suggestedHotels.join(", ")}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                Discover Amazing Hotels
+              </h1>
+              <p className="text-xl mb-8">
+                Find the perfect accommodation for your next adventure
+              </p>
+            </>
+          )}
         </div>
       </div>
 
@@ -72,10 +135,26 @@ const HotelsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">All Hotels</h2>
-          <p className="text-gray-600">
-            Browse through our collection of premium hotels
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                {fromTripPlanner ? "Hotels for Your Trip" : "All Hotels"}
+              </h2>
+              <p className="text-gray-600">
+                {fromTripPlanner
+                  ? "Choose hotels that match your itinerary preferences"
+                  : "Browse through our collection of premium hotels"}
+              </p>
+            </div>
+            {fromTripPlanner && (
+              <button
+                onClick={() => navigate("/trip-planner")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center transition-colors"
+              >
+                ← Back to Trip Planner
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Loading State */}
